@@ -11,18 +11,9 @@ class GeoSparkDemoAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         context?.let {
 
-            val intent = Intent(it, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context?.startActivity(intent)
-            isAppRunning(it)
+            val i = Intent(it, MainActivity::class.java)
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context?.startActivity(i)
         }
-    }
-
-    private fun isAppRunning(ctx: Context): Boolean {
-        val actManager = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        actManager.runningAppProcesses.forEach{
-            Log.i("GSDemoAlarmReceiver", it.processName)
-        }
-        return true
     }
 }
