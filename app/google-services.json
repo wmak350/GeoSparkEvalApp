@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "300498100906",
+    "firebase_url": "https://geosparkdemo-6e751.firebaseio.com",
+    "project_id": "geosparkdemo-6e751",
+    "storage_bucket": "geosparkdemo-6e751.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:300498100906:android:e38b859d4506a5a192e6d3",
+        "android_client_info": {
+          "package_name": "com.wilmak.geosparkapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "300498100906-82eotte3fni5lutq2ih5nkkqd3jh4pfg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVrcubBq5F37cmTmN0ODderLpl-YIL2To"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "300498100906-82eotte3fni5lutq2ih5nkkqd3jh4pfg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
