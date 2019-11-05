@@ -37,10 +37,12 @@
                 <!--<category android:name="android.intent.category.DEFAULT" />-->
             </intent-filter>
         </receiver>
-        <receiver android:name=".GeoSparkDemoAlarmReceiver"
+        <service
+            android:name=".GeoSparkDemoLocationUpdateService"
             android:enabled="true"
-            android:exported="false">
-        </receiver>
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" >
+        </service>
         <service
             android:name=".GeoSparkFBMessagingService"
             android:enabled="true"

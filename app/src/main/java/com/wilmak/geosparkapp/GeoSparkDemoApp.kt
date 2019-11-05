@@ -12,9 +12,15 @@ class GeoSparkDemoApp : Application() {
 
     companion object {
         val ACTION_DEMOAPP_LOCATION_INFO = "android.intent.action.geospark_locinfo"
-        val ACTION_DEMOAPP_USER_CREATED = "android.intent.action.geospark_demoapp.user_created"
+        val ACTION_DEMOAPP_USER_LOGIN = "android.intent.action.geospark_demoapp.user_created"
         val ACTION_DEMOAPP_PERIODIC_LOCATION_UPDATE = "android.intent.action.geospark_demoapp.periodic_loca_update"
-        val ACTION_DEMOAPP_USER_CREATION_FAILURE = "android.intent.action.geospark_demoapp.user_creation_failure"
+        val ACTION_DEMOAPP_USER_LOGIN_FAILURE = "android.intent.action.geospark_demoapp.user_creation_failure"
+
+        val UserIdMap = mapOf(
+            "wilmak" to "5dbe27bf969406161a5ea32d",
+            "demo1" to "5dbabd099694060a045e8f3b",
+            "demo2" to "5dbb9c48e47bae36ffb38fba"
+        )
     }
 
     override fun onCreate() {

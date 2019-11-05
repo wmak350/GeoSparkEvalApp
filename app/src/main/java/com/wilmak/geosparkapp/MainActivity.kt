@@ -12,7 +12,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.content.ContextCompat
 import android.text.TextUtils
 import android.util.Log
@@ -75,17 +74,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 }
-                GeoSparkDemoApp.ACTION_DEMOAPP_USER_CREATED -> {
-                    val id = intent.getStringExtra("Geospark.UserCreated.UserId")
-                    val desc = intent.getStringExtra("Geospark.UserCreated.Description")
-                    txt_activity.append("User created: ${id} Desc: ${desc}\n")
+                GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN -> {
+                    val id = intent.getStringExtra("Geospark.LoginUser.UserId")
+                    val desc = intent.getStringExtra("Geospark.LoginUser.Description")
+                    txt_activity.append("User Login: ${id} Desc: ${desc}\n")
                     clearLogInfoFile()
                     enableAllGeoSparkTrackings()
                 }
-                GeoSparkDemoApp.ACTION_DEMOAPP_USER_CREATION_FAILURE -> {
-                    val ec = intent.getStringExtra("Geospark.UserCreationFailure.EC")
-                    val desc = intent.getStringExtra("Geospark.UserCreationFailure.Desc")
-                    txt_activity.append("User creation failure: ${ec} Desc: ${desc}\n")
+                GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN_FAILURE -> {
+                    val ec = intent.getStringExtra("Geospark.LoginUser.Failure.EC")
+                    val desc = intent.getStringExtra("Geospark.LoginUser.Failure.Desc")
+                    txt_activity.append("User Login failure: ${ec} Desc: ${desc}\n")
                 }
                 GeoSparkDemoApp.ACTION_DEMOAPP_PERIODIC_LOCATION_UPDATE -> {
                     GeoSpark.getCurrentLocation(
@@ -120,8 +119,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             Pair(R.id.btn_getUser, btn_getUser), Pair(R.id.btn_logout, btn_logout),
             Pair(R.id.btn_startTracking, btn_startTracking), Pair(R.id.btn_startTrip, btn_startTrip))
 
-        scheduleAlarmService()
-        scheduleLocationUpdateService()
+        //scheduleActiveLocationUpdateService()
 
         GeoSpark.notificationOpenedHandler(this, getIntent());
         disableBatteryOptimization()
@@ -157,23 +155,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                         val dialog_txt = (dialog as Dialog).findViewById(R.id.txt_name_edit) as EditText
                         val nameText = dialog_txt.text.toString()
                         if (!TextUtils.isEmpty(nameText)) {
-                            mUserName = nameText
-                            txt_name.setText("Welcome $mUserName")
-                            if (TextUtils.isEmpty(mUserName)) {
+                            if (TextUtils.isEmpty(nameText) || !GeoSparkDemoApp.UserIdMap.containsKey(nameText)) {
                                 Toast.makeText(
                                     this@MainActivity,
-                                    "User name could not be empty!",
+                                    "User name not found!",
                                     Toast.LENGTH_LONG
                                 ).show()
                             } else {
-                                GeoSpark.createUser(this, mUserName, object : GeoSparkCallBack {
+                                mUserName = nameText
+                                txt_name.setText("Welcome $mUserName")
+                                GeoSpark.getUser(this, GeoSparkDemoApp.UserIdMap[mUserName], object : GeoSparkCallBack {
 
                                     public override fun onSuccess(geoSparkUser: GeoSparkUser) {
-                                        val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_CREATED)
+                                        val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN)
                                         intent.addCategory(Intent.CATEGORY_DEFAULT)
-                                        intent.putExtra("Geospark.UserCreated.UserId", geoSparkUser.userId)
+                                        intent.putExtra("Geospark.LoginUser.UserId", geoSparkUser.userId)
                                         intent.putExtra(
-                                            "Geospark.UserCreated.Description",
+                                            "Geospark.LoginUser.Description",
                                             geoSparkUser.description
                                         )
                                         sendBroadcast(intent)
@@ -186,11 +184,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                             "GeoSparkDemoApp",
                                             "Create User failure: ${geoSparkError.errorCode} ${geoSparkError.errorMessage}"
                                         )
-                                        val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_CREATION_FAILURE)
+                                        val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN_FAILURE)
                                         intent.addCategory(Intent.CATEGORY_DEFAULT)
-                                        intent.putExtra("Geospark.UserCreationFailure.EC", geoSparkError.errorCode)
+                                        intent.putExtra("Geospark.LoginUser.Failure.EC", geoSparkError.errorCode)
                                         intent.putExtra(
-                                            "Geospark.UserCreationFailure.Desc",
+                                            "Geospark.LoginUser.Failure.Desc",
                                             geoSparkError.errorMessage
                                         )
                                         sendBroadcast(intent)
@@ -233,11 +231,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         clearActivityView()
         restoreStateAndCheckToClearLocationPoints()
         restoreUIState()
+        GeoSparkDemoLocationUpdateService.locationJob(this)
         if (!mIsGeneralInfoReceiverRegistered) {
             val filter = IntentFilter()
             filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_LOCATION_INFO)
-            filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_USER_CREATED)
-            filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_USER_CREATION_FAILURE)
+            filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN)
+            filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN_FAILURE)
             filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_PERIODIC_LOCATION_UPDATE)
             filter.addCategory(Intent.CATEGORY_DEFAULT);
             registerReceiver(generalInfoReceiver, filter)
@@ -331,34 +330,49 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
         mTripId = "TripId_${System.currentTimeMillis()}"
-        GeoSpark.startTrip(this, mTripId, "Trip@${sdf.format(Date(System.currentTimeMillis()))}", object : GeoSparkTripCallBack {
+        if(!GeoSpark.checkLocationPermission(this)) {
+            GeoSpark.requestLocationPermission(this)
+        } else if (!GeoSpark.checkLocationServices(this)) {
+            GeoSpark.requestLocationServices(this)
+        } else {
+            GeoSpark.startTrip(
+                this,
+                mTripId,
+                "Trip@${sdf.format(Date(System.currentTimeMillis()))}",
+                object : GeoSparkTripCallBack {
 
-            override fun onSuccess(geoSparkTrip: GeoSparkTrip) {
-                txt_activity.append("Trip started @ ${sdf.format(Date(System.currentTimeMillis()))} ${geoSparkTrip.msg}\n")
-                restoreUIState()
-            }
+                    override fun onSuccess(geoSparkTrip: GeoSparkTrip) {
+                        txt_activity.append("Trip started @ ${sdf.format(Date(System.currentTimeMillis()))} ${geoSparkTrip.msg}\n")
+                        restoreUIState()
+                    }
 
-            override fun onFailure(geoSparkError: GeoSparkError) {
-                txt_activity.append("Trip start failure @${sdf.format(Date(System.currentTimeMillis()))} ErrCode=${geoSparkError.errorCode} ErrMsg=${geoSparkError.errorMessage}\n")
-                restoreUIState()
-            }
-        })
+                    override fun onFailure(geoSparkError: GeoSparkError) {
+                        txt_activity.append("Trip start failure @${sdf.format(Date(System.currentTimeMillis()))} ErrCode=${geoSparkError.errorCode} ErrMsg=${geoSparkError.errorMessage}\n")
+                        restoreUIState()
+                    }
+                })
+        }
     }
 
     private fun stopTrip() {
+        if(!GeoSpark.checkLocationPermission(this)) {
+            GeoSpark.requestLocationPermission(this)
+        } else if (!GeoSpark.checkLocationServices(this)) {
+            GeoSpark.requestLocationServices(this)
+        } else {
+            GeoSpark.endTrip(this, mTripId, object : GeoSparkTripCallBack {
 
-        GeoSpark.endTrip(this, mTripId, object : GeoSparkTripCallBack {
+                override fun onSuccess(geoSparkTrip: GeoSparkTrip) {
+                    txt_activity.append("Trip ended @ ${sdf.format(Date().time)} ${geoSparkTrip.msg}\n")
+                    restoreUIState()
+                }
 
-            override fun onSuccess(geoSparkTrip: GeoSparkTrip) {
-                txt_activity.append("Trip ended @ ${sdf.format(Date().time)} ${geoSparkTrip.msg}\n")
-                restoreUIState()
-            }
-
-            override fun onFailure(geoSparkError: GeoSparkError) {
-                txt_activity.append("Trip end failure ErrCode=${geoSparkError.errorCode} ErrMsg=${geoSparkError.errorMessage}\n")
-                restoreUIState()
-            }
-        })
+                override fun onFailure(geoSparkError: GeoSparkError) {
+                    txt_activity.append("Trip end failure ErrCode=${geoSparkError.errorCode} ErrMsg=${geoSparkError.errorMessage}\n")
+                    restoreUIState()
+                }
+            })
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -400,6 +414,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             sb.append("time: ${if (locInfo.time != 0L) locInfo.time.toString() else "N/A"}, ")
             sb.append("elapsed time: ${if (locInfo.elpasedTime != -1.0) locInfo.elpasedTime.toString() else "N/A"}")
             txt_activity.append(sb.toString())
+
+            if (locInfo.latitude != -1.0 && locInfo.longitude != -1.0) {
+                saveMapEntryToFile(locInfo.latitude, locInfo.longitude, -1.0, sdf.format(Date(System.currentTimeMillis())))
+            }
         }
     }
 
@@ -440,24 +458,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun scheduleAlarmService() {
-        // Creating the pending intent to send to the BroadcastReceiver
-        mAlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, GeoSparkDemoAlarmReceiver::class.java)
-        mPendingIntent = PendingIntent.getBroadcast(this, ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-        // Starts the alarm manager
-        val wakeupTime = System.currentTimeMillis() + 120 * 1000
-        mAlarmManager.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            wakeupTime,
-            120 * 1000,
-            mPendingIntent
-        )
-        txt_activity.append("Wakeup set at ${sdf.format(Date(wakeupTime))}\n")
-    }
-
-    private fun scheduleLocationUpdateService() {
+    private fun scheduleActiveLocationUpdateService() {
         val executor = ScheduledThreadPoolExecutor(2)
         executor.scheduleAtFixedRate(
             object: Runnable {
