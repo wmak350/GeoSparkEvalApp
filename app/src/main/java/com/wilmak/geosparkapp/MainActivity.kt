@@ -57,7 +57,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var mMap: GoogleMap? = null
 
-    data class LocationPoint(var lat: Double, var lng: Double, var accurracy: Double, var timeStr: String)
+    data class LocationPoint(
+        var lat: Double,
+        var lng: Double,
+        var accurracy: Double,
+        var timeStr: String
+    )
+
     private val mLocationPoints = mutableListOf<LocationPoint>()
 
     private var mIsGeneralInfoReceiverRegistered = false
@@ -117,7 +123,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mButtons = hashMapOf(
             Pair(R.id.btn_getUser, btn_getUser), Pair(R.id.btn_logout, btn_logout),
-            Pair(R.id.btn_startTracking, btn_startTracking), Pair(R.id.btn_startTrip, btn_startTrip))
+            Pair(R.id.btn_startTracking, btn_startTracking), Pair(R.id.btn_startTrip, btn_startTrip)
+        )
 
         //scheduleActiveLocationUpdateService()
 
@@ -132,13 +139,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         tran.commit()
 
         btn_startTrip.setOnClickListener {
-            if (btn_startTrip.text.toString().toLowerCase(Locale.getDefault()).equals(R.string.start_trip.toString().toLowerCase(Locale.getDefault())))
+            if (btn_startTrip.text.toString().toLowerCase(Locale.getDefault()).equals(
+                    R.string.start_trip.toString().toLowerCase(
+                        Locale.getDefault()
+                    )
+                )
+            )
                 stopTrip()
             else
                 startTrip()
         }
 
-        btn_startTracking.setOnClickListener{
+        btn_startTracking.setOnClickListener {
             if (isTrackingOn())
                 stopTracking()
             else
@@ -152,10 +164,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 it.setIcon(R.drawable.common_google_signin_btn_icon_light)
                 it.setPositiveButton(R.string.common_signin_button_text,
                     DialogInterface.OnClickListener { dialog, which ->
-                        val dialog_txt = (dialog as Dialog).findViewById(R.id.txt_name_edit) as EditText
+                        val dialog_txt =
+                            (dialog as Dialog).findViewById(R.id.txt_name_edit) as EditText
                         val nameText = dialog_txt.text.toString()
                         if (!TextUtils.isEmpty(nameText)) {
-                            if (TextUtils.isEmpty(nameText) || !GeoSparkDemoApp.UserIdMap.containsKey(nameText)) {
+                            if (TextUtils.isEmpty(nameText) || !GeoSparkDemoApp.UserIdMap.containsKey(
+                                    nameText
+                                )
+                            ) {
                                 Toast.makeText(
                                     this@MainActivity,
                                     "User name not found!",
@@ -164,37 +180,48 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                             } else {
                                 mUserName = nameText
                                 txt_name.setText("Welcome $mUserName")
-                                GeoSpark.getUser(this, GeoSparkDemoApp.UserIdMap[mUserName], object : GeoSparkCallBack {
+                                GeoSpark.getUser(
+                                    this,
+                                    GeoSparkDemoApp.UserIdMap[mUserName],
+                                    object : GeoSparkCallBack {
 
-                                    public override fun onSuccess(geoSparkUser: GeoSparkUser) {
-                                        val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN)
-                                        intent.addCategory(Intent.CATEGORY_DEFAULT)
-                                        intent.putExtra("Geospark.LoginUser.UserId", geoSparkUser.userId)
-                                        intent.putExtra(
-                                            "Geospark.LoginUser.Description",
-                                            geoSparkUser.description
-                                        )
-                                        sendBroadcast(intent)
-                                        mUserId = geoSparkUser.userId
-                                        restoreUIState()
-                                    }
+                                        public override fun onSuccess(geoSparkUser: GeoSparkUser) {
+                                            val intent =
+                                                Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN)
+                                            intent.addCategory(Intent.CATEGORY_DEFAULT)
+                                            intent.putExtra(
+                                                "Geospark.LoginUser.UserId",
+                                                geoSparkUser.userId
+                                            )
+                                            intent.putExtra(
+                                                "Geospark.LoginUser.Description",
+                                                geoSparkUser.description
+                                            )
+                                            sendBroadcast(intent)
+                                            mUserId = geoSparkUser.userId
+                                            restoreUIState()
+                                        }
 
-                                    public override fun onFailure(geoSparkError: GeoSparkError) {
-                                        Log.w(
-                                            "GeoSparkDemoApp",
-                                            "Create User failure: ${geoSparkError.errorCode} ${geoSparkError.errorMessage}"
-                                        )
-                                        val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN_FAILURE)
-                                        intent.addCategory(Intent.CATEGORY_DEFAULT)
-                                        intent.putExtra("Geospark.LoginUser.Failure.EC", geoSparkError.errorCode)
-                                        intent.putExtra(
-                                            "Geospark.LoginUser.Failure.Desc",
-                                            geoSparkError.errorMessage
-                                        )
-                                        sendBroadcast(intent)
-                                        restoreUIState()
-                                    }
-                                })
+                                        public override fun onFailure(geoSparkError: GeoSparkError) {
+                                            Log.w(
+                                                "GeoSparkDemoApp",
+                                                "Create User failure: ${geoSparkError.errorCode} ${geoSparkError.errorMessage}"
+                                            )
+                                            val intent =
+                                                Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN_FAILURE)
+                                            intent.addCategory(Intent.CATEGORY_DEFAULT)
+                                            intent.putExtra(
+                                                "Geospark.LoginUser.Failure.EC",
+                                                geoSparkError.errorCode
+                                            )
+                                            intent.putExtra(
+                                                "Geospark.LoginUser.Failure.Desc",
+                                                geoSparkError.errorMessage
+                                            )
+                                            sendBroadcast(intent)
+                                            restoreUIState()
+                                        }
+                                    })
                             }
                         }
                     })
@@ -210,7 +237,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             mUserId = ""
             stopTrip()
             stopTracking()
-            GeoSpark.logout(this, object: GeoSparkLogoutCallBack {
+            GeoSpark.logout(this, object : GeoSparkLogoutCallBack {
                 override fun onSuccess(message: String?) {
                     restoreUIState()
                     clearLogInfoFile()
@@ -286,7 +313,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         GeoSpark.toggleEvents(this, true, true, true, object : GeoSparkEventsCallback {
 
             override fun onSuccess(geoSparkEvents: GeoSparkEvents) {
-                val strRes = "Events=${geoSparkEvents.isActivityEventsActive} GeoFence=${geoSparkEvents.isGeofenceEventsActive} Trips=${geoSparkEvents.isTripEventsActive}\n"
+                //This code will update the Device token
+                val preferences = getSharedPreferences("GeoSparkDemoApp", Context.MODE_PRIVATE)
+                val deviceToken = preferences.getString("deviceToken", "")
+                if (deviceToken!!.isNotEmpty()) {
+                    GeoSpark.setDeviceToken(applicationContext, deviceToken)
+                }
+                val strRes =
+                    "Events=${geoSparkEvents.isActivityEventsActive} GeoFence=${geoSparkEvents.isGeofenceEventsActive} Trips=${geoSparkEvents.isTripEventsActive}\n"
                 txt_activity.append(strRes)
             }
 
@@ -296,12 +330,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         })
         GeoSpark.setTrackingInAppState(this, arrayOf(GeoSpark.Type.ALWAYS_ON))
         GeoSpark.setTrackingInMotion(this, arrayOf(GeoSpark.Type.ALL))
-        GeoSpark.setDeviceToken(this, "GeoSparkDemoApp FCM Device Token")
         txt_activity.append("FCM Device Token=${GeoSpark.getDeviceToken(this)}\n")
     }
 
     private fun requestGeoSparkPermissionsAndStartTracking() {
-        if(!GeoSpark.checkLocationPermission(this)) {
+        if (!GeoSpark.checkLocationPermission(this)) {
             GeoSpark.requestLocationPermission(this)
         } else if (!GeoSpark.checkLocationServices(this)) {
             GeoSpark.requestLocationServices(this)
@@ -329,8 +362,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             txt_activity.append("Trip already started \n")
             return
         }
-        mTripId = "TripId_${System.currentTimeMillis()}"
-        if(!GeoSpark.checkLocationPermission(this)) {
+        mTripId = "TripId_${System.currentTimeMillis()}" // Pass the trip id from create trip api
+        if (!GeoSpark.checkLocationPermission(this)) {
             GeoSpark.requestLocationPermission(this)
         } else if (!GeoSpark.checkLocationServices(this)) {
             GeoSpark.requestLocationServices(this)
@@ -355,7 +388,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun stopTrip() {
-        if(!GeoSpark.checkLocationPermission(this)) {
+        if (!GeoSpark.checkLocationPermission(this)) {
             GeoSpark.requestLocationPermission(this)
         } else if (!GeoSpark.checkLocationServices(this)) {
             GeoSpark.requestLocationServices(this)
@@ -385,7 +418,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (ContextCompat.checkSelfPermission(
                         this,
                         android.Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED) {
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
                     txt_activity.append("Location permission granted @ ${sdf.format(Date().time)}\n")
                 }
             }
@@ -416,7 +450,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             txt_activity.append(sb.toString())
 
             if (locInfo.latitude != -1.0 && locInfo.longitude != -1.0) {
-                saveMapEntryToFile(locInfo.latitude, locInfo.longitude, -1.0, sdf.format(Date(System.currentTimeMillis())))
+                saveMapEntryToFile(
+                    locInfo.latitude,
+                    locInfo.longitude,
+                    -1.0,
+                    sdf.format(Date(System.currentTimeMillis()))
+                )
             }
         }
     }
@@ -431,10 +470,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun saveState() {
         val preferences = getSharedPreferences("GeoSparkDemoApp", Context.MODE_PRIVATE)
-        if (! TextUtils.isEmpty(mUserId)) {
+        if (!TextUtils.isEmpty(mUserId)) {
             val editor = preferences.edit()
             editor.putString("userId", mUserId)
-            editor.putString ("userName", mUserName)
+            editor.putString("userName", mUserName)
             editor.commit()
         }
     }
@@ -461,14 +500,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun scheduleActiveLocationUpdateService() {
         val executor = ScheduledThreadPoolExecutor(2)
         executor.scheduleAtFixedRate(
-            object: Runnable {
+            object : Runnable {
                 override fun run() {
                     val intent =
                         Intent(GeoSparkDemoApp.ACTION_DEMOAPP_PERIODIC_LOCATION_UPDATE)
                     intent.addCategory(Intent.CATEGORY_DEFAULT)
                     applicationContext.sendBroadcast(intent)
                 }
-            }, 0, 15, TimeUnit.SECONDS)
+            }, 0, 15, TimeUnit.SECONDS
+        )
     }
 
     private fun setTripUI() {
@@ -481,7 +521,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             override fun onSuccess(trips: MutableList<GeoSparkActiveTrips>?) {
-                btn_startTrip.setText(if (trips!= null && trips.size > 0) R.string.stop_trip else R.string.start_trip)
+                btn_startTrip.setText(if (trips != null && trips.size > 0) R.string.stop_trip else R.string.start_trip)
             }
         })
     }
@@ -489,7 +529,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun restoreUIState() {
         if (TextUtils.isEmpty(mUserId)) {
             mButtons.filter { pair -> pair.key != R.id.btn_getUser }
-                .forEach {pair -> pair.value.isEnabled = false}
+                .forEach { pair -> pair.value.isEnabled = false }
             mButtons[R.id.btn_getUser]?.isEnabled = true
             return
         }
@@ -512,7 +552,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
             override fun onFailure(geoSparkError: GeoSparkError) {
                 mButtons.filter { pair -> pair.key != R.id.btn_getUser }
-                    .forEach {pair -> pair.value.isEnabled = false}
+                    .forEach { pair -> pair.value.isEnabled = false }
                 mButtons[R.id.btn_getUser]?.isEnabled = true
             }
         })
@@ -584,7 +624,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             bufReader.close()
             isr.close()
             fisTemp.close()
-        } catch (ex: FileNotFoundException) {}
+        } catch (ex: FileNotFoundException) {
+        }
     }
 
     private fun clearMap() {
@@ -599,10 +640,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             val latlngL = mLocationPoints.map {
                 LatLng(it.lat, it.lng)
             }.toList()
-            it.addPolyline(PolylineOptions()
-                .jointType(JointType.ROUND)
-                .clickable(false)
-                .addAll(latlngL)
+            it.addPolyline(
+                PolylineOptions()
+                    .jointType(JointType.ROUND)
+                    .clickable(false)
+                    .addAll(latlngL)
             )
             val firstPoint = mLocationPoints.first()
             val lastPoint = mLocationPoints.last()
