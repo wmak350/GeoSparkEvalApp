@@ -57,13 +57,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var mMap: GoogleMap? = null
 
-    data class LocationPoint(var lat: Double, var lng: Double, var accurracy: Double, var timeStr: String)
+    data class LocationPoint(var lat: Double, var lng: Double, var alt: Double, var accurracy: Double, var timeStr: String)
     private val mLocationPoints = mutableListOf<LocationPoint>()
 
     private var mIsGeneralInfoReceiverRegistered = false
     private lateinit var mButtons: HashMap<Int, Button>
 
     private val generalInfoReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 GeoSparkDemoApp.ACTION_DEMOAPP_LOCATION_INFO -> {
@@ -100,7 +101,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                         format(Date(System.currentTimeMillis()))
                                     }
                                 txt_activity.append("${timeStr}:Current loc:${lat},${lng}\n")
-                                saveMapEntryToFile(lat, lng, accuraccy, timeStr)
+                                saveMapEntryToFile(lat, lng, -1.0, accuraccy, timeStr)
                             }
                         })
                 }
@@ -416,7 +417,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             txt_activity.append(sb.toString())
 
             if (locInfo.latitude != -1.0 && locInfo.longitude != -1.0) {
-                saveMapEntryToFile(locInfo.latitude, locInfo.longitude, -1.0, sdf.format(Date(System.currentTimeMillis())))
+                saveMapEntryToFile(locInfo.latitude, locInfo.longitude,
+                    if (locInfo.altitude != null) locInfo.altitude!! else -1.0,
+                    if (locInfo.accuracy != null) locInfo.accuracy!! else -1.0,
+                    sdf.format(Date(System.currentTimeMillis())))
             }
         }
     }
@@ -446,7 +450,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             mUserId = uid!!
             getAllLocPoints()
             mLocationPoints.forEach {
-                txt_activity.append("${it.timeStr}:Current loc:${it.lat},${it.lng}\n")
+                txt_activity.append("${it.timeStr}:Curr loc:${it.lat},${it.lng} alt:${it.alt}\n")
             }
         } else {
             clearLogInfoFile()
@@ -541,7 +545,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         openLocInfoFileForWriting()
     }
 
-    private fun saveMapEntryToFile(lat: Double, lng: Double, accuracy: Double, timeStr: String) {
+    private fun saveMapEntryToFile(lat: Double, lng: Double, alt: Double, accuracy: Double, timeStr: String) {
         if (lat == 0.0 || lat == -1.0 || lng == 0.0 || lng == -1.0) {
             return
         }
@@ -551,9 +555,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         if (lastLocationPoint?.lat == lat || lastLocationPoint?.lng == lng)
             return
-        mLocationPoints.add(LocationPoint(lat, lng, accuracy, timeStr))
+        mLocationPoints.add(LocationPoint(lat, lng, alt, accuracy, timeStr))
         drawTripLineOnMap()
-        mSWriter?.append("$lat,$lng,$accuracy,$timeStr\n")
+        mSWriter?.append("$lat,$lng,$alt,$accuracy,$timeStr\n")
         mSWriter?.flush()
     }
 
@@ -569,14 +573,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             mLocationPoints.clear()
             while (!TextUtils.isEmpty(line)) {
                 val sArray = line.split(",")
-                if (sArray.size != 4)
+                if (sArray.size != 5)
                     continue
 
                 val currLocInfo = LocationPoint(
                     sArray[0].toDouble(),
                     sArray[1].toDouble(),
                     sArray[2].toDouble(),
-                    sArray[3]
+                    sArray[3].toDouble(),
+                    sArray[4]
                 )
                 mLocationPoints.add(currLocInfo)
                 line = bufReader.readLine()
