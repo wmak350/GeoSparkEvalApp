@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                     SimpleDateFormat("hh:mm:ss").run {
                                         format(Date(System.currentTimeMillis()))
                                     }
-                                txt_activity.append("${timeStr}:Current loc:${lat},${lng}\n")
+                                txt_activity.append("${timeStr}:P Current loc:${lat},${lng}\n")
                                 if (mLocationPoints.size > 0) {
                                     val lastLocationPoint = mLocationPoints.last()
                                     val lastLatLang = LatLng(lastLocationPoint.lat, lastLocationPoint.lng)
@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         GeoSpark.notificationOpenedHandler(this, getIntent());
         disableBatteryOptimization()
         enableAllGeoSparkTrackings()
+        startFGService()
 
         val mapFragment = SupportMapFragment()
         mapFragment.getMapAsync(this)
@@ -253,7 +254,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         restoreStateAndCheckToClearLocationPoints()
         restoreUIState()
         GeoSparkDemoLocationUpdateService.locationJob(this)
-        scheduleActiveLocationUpdateService()
+        //scheduleActiveLocationUpdateService()
         if (!mIsGeneralInfoReceiverRegistered) {
             val filter = IntentFilter()
             filter.addAction(GeoSparkDemoApp.ACTION_DEMOAPP_LOCATION_INFO)
@@ -364,7 +365,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 events.trip_id?.let {
                     mTripId = events.trip_id
                     restoreUIState()
-                    /*
+
                     if (!GeoSpark.checkLocationPermission(this@MainActivity)) {
                         GeoSpark.requestLocationPermission(this@MainActivity)
                     } else if (!GeoSpark.checkLocationServices(this@MainActivity)) {
@@ -393,7 +394,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                 }
                             })
                     }
-                    */
+
                 }
             }
 
@@ -522,6 +523,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /*
     private fun scheduleActiveLocationUpdateService() {
         val executor = ScheduledThreadPoolExecutor(2)
         executor.scheduleAtFixedRate(
@@ -534,6 +536,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }, 0, 15, TimeUnit.SECONDS
         )
+    }
+    */
+    private fun startFGService() {
+        val intent = Intent(this@MainActivity, GeoSparkDemoForegroundService::class.java)
+        intent.action = GeoSparkDemoForegroundService.GEOSPARK_EVALAPP_START_PERIODIC_UPDATE
+        startForegroundService(intent)
+    }
+
+    private fun stopFGService() {
+        val intf = IntentFilter(GeoSparkDemoForegroundService.GEOSPARK_EVALAPP_START_PERIODIC_UPDATE)
+        val intent = Intent(this@MainActivity, GeoSparkDemoForegroundService::class.java)
+        startForegroundService(intent)
     }
 
     private fun setTripUI() {

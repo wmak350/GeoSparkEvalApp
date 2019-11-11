@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.wilmak.geosparkapp">
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"></uses-permission>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -23,7 +24,8 @@
 
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTask">
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -51,6 +53,13 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
+        <service android:name=".GeoSparkDemoForegroundService"
+            android:exported="false"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="GEOSPARK_EVALAPP.action.start_periodic_loc_updates"/>
+                <action android:name="GEOSPARK_EVALAPP.action.stop_periodic_loc_updates"/>
+            </intent-filter>
+        </service>
     </application>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 </manifest>
