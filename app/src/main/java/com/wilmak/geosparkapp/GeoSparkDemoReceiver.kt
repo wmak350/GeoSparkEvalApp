@@ -29,14 +29,13 @@ class GeoSparkDemoReceiver : GeoSparkReceiver() {
         with(locationInfo) {
             if (location.hasAccuracy())
                 accuracy = location.accuracy.toDouble()
-            if (location.hasAltitude())
-                altitude = location.altitude.toDouble()
             if (location.hasBearing())
                 bearing = location.bearing.toDouble()
             if (location.hasSpeed())
                 speed = location.speed.toDouble()
             latitude = location.latitude
             longitude = location.longitude
+            altitude = location.altitude.toDouble()
             elpasedTime = location.elapsedRealtimeNanos.toDouble()
             time = location.time
             provider = location.provider

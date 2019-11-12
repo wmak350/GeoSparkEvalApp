@@ -27,7 +27,7 @@ class GeoSparkDemoLocationUpdateService : JobService() {
     override fun onStopJob(params: JobParameters?): Boolean {
         try {
             unregisterReceiver(mLocationReceiver)
-            GeoSparkDemoLocationUpdateService.locationJob(this)
+            locationJob(this)
         } catch (ex: Exception) {}
         return true
     }

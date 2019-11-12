@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.geospark.lib"
+    android:versionCode="1"
+    android:versionName="2.2.1" >
+
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="29" />
+
+    <!-- Network -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Activity -->
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Location -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- Restart -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Service -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Battery -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- GPS -->
+    <uses-permission android:name="android.location.GPS_ENABLED_CHANGE" />
+
+    <uses-feature android:name="android.hardware.location.gps" />
+
+    <application
+        android:requestLegacyExternalStorage="true"
+        tools:targetApi="q" >
+
+        <!-- Motion -->
+        <service
+            android:name="com.geospark.lib.activity.motion.MotionService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Job Scheduler -->
+        <service
+            android:name="com.geospark.lib.location.services.GSLocationService"
+            android:exported="false"
+            android:foregroundServiceType="location"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            tools:targetApi="q" />
+        <service
+            android:name="com.geospark.lib.location.services.GSUCLocationService"
+            android:exported="false"
+            android:foregroundServiceType="location"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            tools:targetApi="q" />
+
+        <!-- Trip -->
+        <service
+            android:name="com.geospark.lib.trip.services.GSTripService"
+            android:exported="false"
+            android:foregroundServiceType="location"
+            tools:targetApi="q" />
+
+        <!-- Current Location -->
+        <service
+            android:name="com.geospark.lib.location.services.GSCLocationService"
+            android:exported="false"
+            android:foregroundServiceType="location"
+            tools:targetApi="q" />
+
+        <!-- RECEIVER -->
+        <receiver
+            android:name="com.geospark.lib.appstate.GeoSparkBootReceiver"
+            android:enabled="true" >
+            <intent-filter android:priority="999" >
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
