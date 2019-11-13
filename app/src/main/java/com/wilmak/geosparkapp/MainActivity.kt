@@ -127,7 +127,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         GeoSpark.notificationOpenedHandler(this, getIntent());
         disableBatteryOptimization()
-        enableAllGeoSparkTrackings()
+        //enableAllGeoSparkTrackings()
+
         startFGService()
 
         val mapFragment = SupportMapFragment()
@@ -181,6 +182,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                     object : GeoSparkCallBack {
 
                                         public override fun onSuccess(geoSparkUser: GeoSparkUser) {
+                                            enableAllGeoSparkTrackings()
                                             val intent =
                                                 Intent(GeoSparkDemoApp.ACTION_DEMOAPP_USER_LOGIN)
                                             intent.addCategory(Intent.CATEGORY_DEFAULT)
