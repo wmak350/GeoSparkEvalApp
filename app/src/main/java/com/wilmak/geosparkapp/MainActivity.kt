@@ -128,7 +128,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         GeoSpark.notificationOpenedHandler(this, getIntent());
         disableBatteryOptimization()
         //enableAllGeoSparkTrackings()
-
         startFGService()
 
         val mapFragment = SupportMapFragment()
