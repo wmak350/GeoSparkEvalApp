@@ -30,7 +30,7 @@ class GeoSparkFBMessagingService : FirebaseMessagingService() {
             val editor = preferences.edit()
             editor.putString("deviceToken", token)
             editor.commit()
-            Log.i("GSFBMessagingService" , "Device Token: ${token}")
+            Log.i("GSFBMessagingService", "Device Token: ${token}")
         }
     }
 
