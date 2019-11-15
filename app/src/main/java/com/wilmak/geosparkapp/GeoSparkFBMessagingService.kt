@@ -19,7 +19,8 @@ import java.util.*
 class GeoSparkFBMessagingService : FirebaseMessagingService() {
 
     companion object {
-        public val GEOSPARK_NOTIFICATION_ID_STR = "GeoSparkNotificationId"
+        public val GEOSPARK_NOTIFICATION_ID_STR = "GSNotificationId"
+        public val GEOSPARK_NOTIFICATION_NAME_STR = "GSNotificationName"
     }
 
     //This code will update the Device token
@@ -43,10 +44,9 @@ class GeoSparkFBMessagingService : FirebaseMessagingService() {
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val name = context.getString(R.string.app_name)
                 val channel = NotificationChannel(
                     GEOSPARK_NOTIFICATION_ID_STR,
-                    name,
+                    GEOSPARK_NOTIFICATION_NAME_STR,
                     NotificationManager.IMPORTANCE_HIGH
                 )
                 notificationManager.createNotificationChannel(channel)

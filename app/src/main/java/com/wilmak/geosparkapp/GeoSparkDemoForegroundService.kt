@@ -29,21 +29,17 @@ class GeoSparkDemoForegroundService : Service() {
         if (intent == null)
             return START_STICKY
         acquireWakeupLock()
-        createNotificationChannel()
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0, notificationIntent, 0
-        )
 
+        val i = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, i, 0)
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Foreground Service")
             .setContentText("Foreground Periodic Location Updates starting...")
             .setSmallIcon(android.R.drawable.ic_notification_overlay)
             .setContentIntent(pendingIntent)
             .build()
-
-        startForeground(1, notification)
+        val mgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        mgr.notify(0, notification)
 
         when (intent.action) {
             GEOSPARK_EVALAPP_START_PERIODIC_UPDATE -> startPeriodicLocationUpdates()
