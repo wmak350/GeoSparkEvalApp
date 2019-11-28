@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
+import com.geospark.lib.GeoSpark
 import com.geospark.lib.model.GeoSparkError
 import com.geospark.lib.model.GeoSparkUser
 import com.geospark.lib.location.services.GeoSparkReceiver
@@ -13,6 +14,7 @@ class GeoSparkDemoReceiver : GeoSparkReceiver() {
         context: Context, location: Location,
         geoSparkUser: GeoSparkUser, activity: String
     ) {
+        GeoSpark.updateCurrentLocation(context, 25)
         val bundle = createLocationInfoBundle(location)
         val intent = Intent(GeoSparkDemoApp.ACTION_DEMOAPP_LOCATION_INFO)
         intent.putExtra("locationInfo", bundle)

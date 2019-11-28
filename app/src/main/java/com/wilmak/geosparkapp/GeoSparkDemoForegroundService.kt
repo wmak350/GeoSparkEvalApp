@@ -37,6 +37,7 @@ class GeoSparkDemoForegroundService : Service() {
             .setContentText("Foreground Periodic Location Updates starting...")
             .setSmallIcon(android.R.drawable.ic_notification_overlay)
             .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
             .build()
         val mgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         mgr.notify(0, notification)

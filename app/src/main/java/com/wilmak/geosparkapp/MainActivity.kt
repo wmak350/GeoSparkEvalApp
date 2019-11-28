@@ -1,9 +1,7 @@
 package com.wilmak.geosparkapp
 
-import android.app.AlarmManager
 import android.app.AlertDialog
 import android.app.Dialog
-import android.app.PendingIntent
 import android.content.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -32,15 +30,16 @@ import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import java.util.concurrent.ScheduledThreadPoolExecutor
-import java.util.concurrent.TimeUnit
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
         val User_Name = "Demo User"
-        val LocInfo_Filename = "LocInfoData.txt"
+        val LocInfo_Filename = "LocInfoData"
+        val LocInfo_Filename_Ext = ".txt"
         val ALARM_REQUEST_CODE = 1001
     }
 
@@ -101,8 +100,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                     val lastLocationPoint = mLocationPoints.last()
                                     val lastLatLang = LatLng(lastLocationPoint.lat, lastLocationPoint.lng)
                                     val curreLatLng = LatLng(lat, lng)
-                                    if (getHaversineDistance(lastLatLang, curreLatLng, DistanceUnit.Kilometers) <= 0.025)
-                                        return
+                                    if (getHaversineDistance(lastLatLang, curreLatLng, DistanceUnit.Kilometers) <= 0.025) {
+                                        GeoSpark.updateCurrentLocation(this@MainActivity, 25)
+                                    }
+                                    return
                                 }
                                 saveMapEntryToFile(lat, lng, -1.0, accuraccy, timeStr)
                             }
@@ -596,7 +597,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun openLocInfoFileForWriting() {
-        mFos = applicationContext.openFileOutput(LocInfo_Filename, Context.MODE_APPEND)
+        mFos = applicationContext.openFileOutput("${LocInfo_Filename}${LocInfo_Filename_Ext}", Context.MODE_APPEND)
         mSWriter = OutputStreamWriter(mFos!!)
     }
 
@@ -606,15 +607,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mLocationPoints.clear()
     }
 
-    private fun removeLocInfoFile() {
-        val f = applicationContext.getFileStreamPath(LocInfo_Filename)
-        if (f.exists())
-            f.delete()
+    private fun useNextLocInfoFile() {
+        var f = File("${applicationContext.filesDir}${File.separator}${LocInfo_Filename}${LocInfo_Filename_Ext}")
+        if (f.exists()) {
+            val path = applicationContext.getExternalFilesDir(null)
+            val newPathName = "${path}${File.separator}${LocInfo_Filename}_${System.currentTimeMillis()}$LocInfo_Filename_Ext"
+            Files.move(f.toPath(), File(newPathName).toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
     }
 
     private fun clearLogInfoFile() {
         closeLocInfoFile()
-        removeLocInfoFile()
+        useNextLocInfoFile()
         openLocInfoFileForWriting()
     }
 
@@ -638,7 +642,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         try {
             Log.i("MainActivity", "System File Path: ${applicationContext.filesDir}")
-            val fisTemp = applicationContext.openFileInput(LocInfo_Filename)
+            val fisTemp = applicationContext.openFileInput("${LocInfo_Filename}${LocInfo_Filename_Ext}")
             val isr = InputStreamReader(fisTemp)
             val bufReader = BufferedReader(isr)
             var line = bufReader.readLine()
