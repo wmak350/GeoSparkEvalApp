@@ -19,7 +19,8 @@ class GeoSparkDemoApp : Application() {
         val UserIdMap = mapOf(
             "wilmak" to "5dbe27bf969406161a5ea32d",
             "demo1" to "5dbabd099694060a045e8f3b",
-            "demo2" to "5dbb9c48e47bae36ffb38fba"
+            "demo2" to "5db95ac5e47bae38249fbe6c",
+            "user1" to "5db9544ae47bae38249fbe1e"
         )
     }
 

@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                     val lastLocationPoint = mLocationPoints.last()
                                     val lastLatLang = LatLng(lastLocationPoint.lat, lastLocationPoint.lng)
                                     val curreLatLng = LatLng(lat, lng)
-                                    if (getHaversineDistance(lastLatLang, curreLatLng, DistanceUnit.Kilometers) <= 50)
+                                    if (getHaversineDistance(lastLatLang, curreLatLng, DistanceUnit.Kilometers) <= 0.025)
                                         return
                                 }
                                 saveMapEntryToFile(lat, lng, -1.0, accuraccy, timeStr)
@@ -542,13 +542,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun startFGService() {
         val intent = Intent(this@MainActivity, GeoSparkDemoForegroundService::class.java)
         intent.action = GeoSparkDemoForegroundService.GEOSPARK_EVALAPP_START_PERIODIC_UPDATE
-        startForegroundService(intent)
+        startService(intent)
     }
 
     private fun stopFGService() {
         val intf = IntentFilter(GeoSparkDemoForegroundService.GEOSPARK_EVALAPP_START_PERIODIC_UPDATE)
         val intent = Intent(this@MainActivity, GeoSparkDemoForegroundService::class.java)
-        startForegroundService(intent)
+        startService(intent)
     }
 
     private fun setTripUI() {
